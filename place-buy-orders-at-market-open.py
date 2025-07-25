@@ -1,8 +1,6 @@
 import os
 import alpaca_trade_api as tradeapi
 import yfinance as yf
-from datetime import datetime, time
-import pytz
 from time import sleep
 
 # Load environment variables for Alpaca API
@@ -32,7 +30,7 @@ def is_fractional_trading_supported(symbol):
         print(f"Error checking fractional trading for {symbol}: {e}")
         return False
 
-# Function to get latest stock prices using yfinance
+# Function to get latest stock prices using yfinance with 1.5s pause
 def get_stock_prices(symbols):
     prices = {}
     try:
@@ -42,15 +40,17 @@ def get_stock_prices(symbols):
                 ticker = tickers.tickers[symbol]
                 price = ticker.history(period='1d')['Close'].iloc[-1]
                 prices[symbol] = round(price, 2)
+                print(f"Fetched price for {symbol}: ${prices[symbol]:.2f}")
             except Exception as e:
                 print(f"Error fetching price for {symbol}: {e}")
                 prices[symbol] = None
+            sleep(1.5)  # Pause 1.5 seconds after each price lookup
     except Exception as e:
         print(f"Error fetching prices: {e}")
     return prices
 
-# Function to place fractional order at market open
-def place_fractional_order_at_open(symbol, notional):
+# Function to place fractional order
+def place_fractional_order(symbol, notional):
     try:
         if is_fractional_trading_supported(symbol):
             api.submit_order(
@@ -58,9 +58,9 @@ def place_fractional_order_at_open(symbol, notional):
                 notional=notional,  # Dollar amount for fractional shares
                 side='buy',
                 type='market',
-                time_in_force='opg'  # Order executes at market open
+                time_in_force='day'  # Use 'day' for fractional orders
             )
-            print(f"Submitted $1.00 market order for {symbol} to execute at market open")
+            print(f"Submitted $1.00 market order for {symbol} with day validity for next market open")
         else:
             print(f"{symbol} does not support fractional trading")
     except Exception as e:
@@ -98,13 +98,12 @@ def main():
             return
 
         # Place orders
-        print("\nPlacing orders for execution at market open...")
+        print("\nPlacing fractional orders for execution at next market open...")
         for symbol in valid_symbols:
-            place_fractional_order_at_open(symbol, 1.00)
+            place_fractional_order(symbol, 1.00)
             sleep(0.5)  # Avoid API rate limits
-
         # Print confirmation message
-        print("\nAsk is this ok? Yes ? Type y for yes.")
+        print("\nIs this OK? Type 'y' for yes.")
 
     except Exception as e:
         print(f"Error in main execution: {e}")
