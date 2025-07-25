@@ -11,15 +11,15 @@ APIBASEURL = os.getenv('APCA_API_BASE_URL')
 # Initialize the Alpaca API
 api = tradeapi.REST(APIKEYID, APISECRETKEY, APIBASEURL)
 
-# List of 30 S&P 500 symbols (yfinance format)
+# List of 30 S&P 500 symbols (yfinance format, using BRK-B)
 symbols_yfinance = [
-    'MSFT', 'NVDA', 'AAPL', 'AMZN', 'GOOGL', 'META', 'AVGO', 'BRK.B', 'TSLA', 'JPM',
+    'MSFT', 'NVDA', 'AAPL', 'AMZN', 'GOOGL', 'META', 'AVGO', 'BRK-B', 'TSLA', 'JPM',
     'UNH', 'V', 'MA', 'PG', 'JNJ', 'HD', 'MRK', 'ABBV', 'WMT', 'BAC',
     'KO', 'PFE', 'CSCO', 'DIS', 'INTC', 'CMCSA', 'VZ', 'ADBE', 'CRM', 'QCOM'
 ]
 
-# Map yfinance symbols to Alpaca symbols (replace BRK.B with BRK-B)
-symbols_alpaca = [s.replace('BRK.B', 'BRK-B') for s in symbols_yfinance]
+# Map yfinance symbols to Alpaca symbols (replace BRK-B with BRK.B)
+symbols_alpaca = [s.replace('BRK-B', 'BRK.B') for s in symbols_yfinance]
 
 # Function to check if a symbol supports fractional trading
 def is_fractional_trading_supported(symbol):
@@ -102,6 +102,7 @@ def main():
         for symbol in valid_symbols:
             place_fractional_order(symbol, 1.00)
             sleep(0.5)  # Avoid API rate limits
+
         # Print confirmation message
         print("\nIs this OK? Type 'y' for yes.")
 
