@@ -13,14 +13,15 @@ APIBASEURL = os.getenv('APCA_API_BASE_URL')
 # Initialize the Alpaca API
 api = tradeapi.REST(APIKEYID, APISECRETKEY, APIBASEURL)
 
-# List of S&P 500 symbols
-symbols = [
-    'MSFT', 'NVDA', 'AAPL', 'AMZN', 'GOOGL', 'META', 'AVGO', 'BRK-B', 'TSLA', 'JPM',
+# List of 30 S&P 500 symbols (yfinance format)
+symbols_yfinance = [
+    'MSFT', 'NVDA', 'AAPL', 'AMZN', 'GOOGL', 'META', 'AVGO', 'BRK.B', 'TSLA', 'JPM',
     'UNH', 'V', 'MA', 'PG', 'JNJ', 'HD', 'MRK', 'ABBV', 'WMT', 'BAC',
-    'KO', 'PFE', 'CSCO', 'DIS', 'INTC', 'CMCSA', 'VZ', 'ADBE', 'CRM', 'QCOM',
-    'AMD', 'TXN', 'AMGN', 'ISRG', 'GILD', 'BMY', 'SCHW', 'C', 'GS', 'NFLX',
-    'PEP', 'COST', 'MCD', 'T', 'TMO', 'LLY'
+    'KO', 'PFE', 'CSCO', 'DIS', 'INTC', 'CMCSA', 'VZ', 'ADBE', 'CRM', 'QCOM'
 ]
+
+# Map yfinance symbols to Alpaca symbols (replace BRK.B with BRK-B)
+symbols_alpaca = [s.replace('BRK.B', 'BRK-B') for s in symbols_yfinance]
 
 # Function to check if a symbol supports fractional trading
 def is_fractional_trading_supported(symbol):
@@ -65,11 +66,6 @@ def place_fractional_order_at_open(symbol, notional):
     except Exception as e:
         print(f"Error placing order for {symbol}: {e}")
 
-# Function to check if market is open
-def is_market_open():
-    clock = api.get_clock()
-    return clock.is_open
-
 # Main execution
 def main():
     try:
@@ -80,27 +76,21 @@ def main():
 
         # Get stock prices
         print("\nFetching latest stock prices from yfinance...")
-        prices = get_stock_prices(symbols)
+        prices = get_stock_prices(symbols_yfinance)
 
         # Calculate total order cost
         total_order_cost = 0.0
         valid_symbols = []
-        for symbol in symbols:
-            if prices.get(symbol) is not None:
+        for yf_symbol, alpaca_symbol in zip(symbols_yfinance, symbols_alpaca):
+            if prices.get(yf_symbol) is not None:
                 total_order_cost += 1.00  # $1.00 per symbol
-                valid_symbols.append(symbol)
+                valid_symbols.append(alpaca_symbol)
             else:
-                print(f"Skipping {symbol} due to missing price data")
+                print(f"Skipping {alpaca_symbol} due to missing price data")
 
         print(f"\nTotal order cost for {len(valid_symbols)} symbols: ${total_order_cost:.2f}")
         available_balance = cash_balance - total_order_cost
         print(f"Available cash balance after orders: ${available_balance:.2f}")
-
-        # Check if market is open
-        if is_market_open():
-            print("\nMarket is currently open. Orders will be submitted for the next market open.")
-        else:
-            print("\nMarket is currently closed. Orders will be submitted for the next market open.")
 
         # Check for sufficient buying power
         if available_balance < 0:
