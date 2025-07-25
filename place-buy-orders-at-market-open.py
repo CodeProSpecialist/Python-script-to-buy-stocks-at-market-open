@@ -95,14 +95,20 @@ def main():
             print(f"Insufficient buying power: ${cash_balance:.2f} available, ${total_order_cost:.2f} needed")
             return
 
+        # Prompt for confirmation before placing orders
+        print(f"\nAbout to place {len(valid_symbols)} buy orders of $1.00 each for execution at next market open.")
+        confirmation = input("Is this OK? Type 'y' for yes: ").strip().lower()
+        if confirmation != 'y':
+            print("Order placement cancelled.")
+            return
+
         # Place orders
         print("\nPlacing fractional orders for execution at next market open...")
         for symbol in valid_symbols:
             place_fractional_order(symbol, 1.00)
             sleep(0.5)  # Avoid API rate limits
 
-        # Print confirmation message
-        print("\nIs this OK? Type 'y' for yes.")
+        print("\nAll orders submitted successfully.")
 
     except Exception as e:
         print(f"Error in main execution: {e}")
