@@ -11,15 +11,12 @@ APIBASEURL = os.getenv('APCA_API_BASE_URL')
 # Initialize the Alpaca API
 api = tradeapi.REST(APIKEYID, APISECRETKEY, APIBASEURL)
 
-# List of 30 S&P 500 symbols (yfinance format, using BRK-B)
-symbols_yfinance = [
-    'MSFT', 'NVDA', 'AAPL', 'AMZN', 'GOOGL', 'META', 'AVGO', 'BRK-B', 'TSLA', 'JPM',
+# List of 30 S&P 500 symbols (Alpaca format, using BRK.B)
+symbols = [
+    'MSFT', 'NVDA', 'AAPL', 'AMZN', 'GOOGL', 'META', 'AVGO', 'BRK.B', 'TSLA', 'JPM',
     'UNH', 'V', 'MA', 'PG', 'JNJ', 'HD', 'MRK', 'ABBV', 'WMT', 'BAC',
     'KO', 'PFE', 'CSCO', 'DIS', 'INTC', 'CMCSA', 'VZ', 'ADBE', 'CRM', 'QCOM'
 ]
-
-# Map yfinance symbols to Alpaca symbols (replace BRK-B with BRK.B)
-symbols_alpaca = [s.replace('BRK-B', 'BRK.B') for s in symbols_yfinance]
 
 # Function to check if a symbol supports fractional trading
 def is_fractional_trading_supported(symbol):
@@ -30,23 +27,24 @@ def is_fractional_trading_supported(symbol):
         print(f"Error checking fractional trading for {symbol}: {e}")
         return False
 
-# Function to get latest stock prices using yfinance with 1.5s pause
+# Function to get latest stock price using yfinance
+def get_current_price(symbol):
+    symbol = symbol.replace('.', '-')  # Replace '.' with '-' for yfinance
+    try:
+        stock_data = yf.Ticker(symbol)
+        price = stock_data.history(period='1d')['Close'].iloc[-1]
+        print(f"Fetched price for {symbol}: ${price:.2f}")
+        return round(price, 2)
+    except Exception as e:
+        print(f"Error fetching price for {symbol}: {e}")
+        return None
+
+# Function to get prices for all symbols with 1.5s pause
 def get_stock_prices(symbols):
     prices = {}
-    try:
-        tickers = yf.Tickers(' '.join(symbols))
-        for symbol in symbols:
-            try:
-                ticker = tickers.tickers[symbol]
-                price = ticker.history(period='1d')['Close'].iloc[-1]
-                prices[symbol] = round(price, 2)
-                print(f"Fetched price for {symbol}: ${prices[symbol]:.2f}")
-            except Exception as e:
-                print(f"Error fetching price for {symbol}: {e}")
-                prices[symbol] = None
-            sleep(1.5)  # Pause 1.5 seconds after each price lookup
-    except Exception as e:
-        print(f"Error fetching prices: {e}")
+    for symbol in symbols:
+        prices[symbol] = get_current_price(symbol)
+        sleep(1.5)  # Pause 1.5 seconds after each price lookup
     return prices
 
 # Function to place fractional order
@@ -76,17 +74,17 @@ def main():
 
         # Get stock prices
         print("\nFetching latest stock prices from yfinance...")
-        prices = get_stock_prices(symbols_yfinance)
+        prices = get_stock_prices(symbols)
 
         # Calculate total order cost
         total_order_cost = 0.0
         valid_symbols = []
-        for yf_symbol, alpaca_symbol in zip(symbols_yfinance, symbols_alpaca):
-            if prices.get(yf_symbol) is not None:
+        for symbol in symbols:
+            if prices.get(symbol) is not None:
                 total_order_cost += 1.00  # $1.00 per symbol
-                valid_symbols.append(alpaca_symbol)
+                valid_symbols.append(symbol)
             else:
-                print(f"Skipping {alpaca_symbol} due to missing price data")
+                print(f"Skipping {symbol} due to missing price data")
 
         print(f"\nTotal order cost for {len(valid_symbols)} symbols: ${total_order_cost:.2f}")
         available_balance = cash_balance - total_order_cost
