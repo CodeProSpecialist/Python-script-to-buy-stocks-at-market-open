@@ -15,7 +15,7 @@ api = tradeapi.REST(APIKEYID, APISECRETKEY, APIBASEURL)
 
 # List of S&P 500 symbols
 symbols = [
-    'MSFT', 'NVDA', 'AAPL', 'AMZN', 'GOOGL', 'META', 'AVGO', 'BRK.B', 'TSLA', 'JPM',
+    'MSFT', 'NVDA', 'AAPL', 'AMZN', 'GOOGL', 'META', 'AVGO', 'BRK-B', 'TSLA', 'JPM',
     'UNH', 'V', 'MA', 'PG', 'JNJ', 'HD', 'MRK', 'ABBV', 'WMT', 'BAC',
     'KO', 'PFE', 'CSCO', 'DIS', 'INTC', 'CMCSA', 'VZ', 'ADBE', 'CRM', 'QCOM',
     'AMD', 'TXN', 'AMGN', 'ISRG', 'GILD', 'BMY', 'SCHW', 'C', 'GS', 'NFLX',
