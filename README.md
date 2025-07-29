@@ -1,5 +1,5 @@
 # Python-script-to-buy-stocks-at-market-open
-Python script to buy stocks at market open 
+Python script to buy stocks at market open. 
 
 Important: Don't forget to regularly update your list of stocks to buy and keep an eye on the market conditions. Happy trading!
 
