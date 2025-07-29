@@ -1,6 +1,10 @@
 # Python-script-to-buy-stocks-at-market-open
 Python script to buy stocks at market open. 
 
+On the command line:
+
+pip3 install alpaca-trade-api yfinance 
+
 Important: Don't forget to regularly update your list of stocks to buy and keep an eye on the market conditions. Happy trading!
 
 Disclaimer:
