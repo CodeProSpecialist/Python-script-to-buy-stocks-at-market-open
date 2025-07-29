@@ -11,7 +11,7 @@ APIBASEURL = os.getenv('APCA_API_BASE_URL')
 # Initialize the Alpaca API
 api = tradeapi.REST(APIKEYID, APISECRETKEY, APIBASEURL)
 
-# List of 30 S&P 500 symbols (Alpaca format, using BRK.B)
+# List of 19 S&P 500 symbols (Alpaca format, using BRK.B)
 symbols = [
     "MSFT", "NVDA", "AAPL", "AMZN", "GOOGL", "META", "AVGO", "TSLA",
     "JPM", "UNH", "V", "MA", "PG", "HD", "WMT", "BAC", "CSCO", "CRM", "AMD"
